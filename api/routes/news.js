@@ -42,22 +42,25 @@ router.post('/', (req, res, next) => {
     });
     news.save().then(result => {
         console.log(result);
-    }).catch(err => console.log(err));
+    }).catch(err => {console.log(err);
     res.status(200).json({
-        message: "Handling Post",
-        news: req.body,
-    });
+        message: "Some Error in News Post",
+        Error: err
+    });})
 });
 
 // DELETING A NEWS
 router.delete('/:newsId', (req, res, next) => {
     const id = req.params.newsId;
     News.remove({ _id: id }).exec().then((result) => {
-        res.status(200).json(result);
+        res.status(200).json({
+            message: "News Deleted Successfully",
+            result: result
+        });
     }).catch((err) => {
         console.log(err);
         res.status(500).json({
-            message: "Not Deleted",
+            message: "News Not Deleted",
             Error: err,
         });
     });

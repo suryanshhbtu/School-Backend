@@ -1,6 +1,8 @@
 // requestListner -> for handling request easily
 const express = require('express'); // importing express
 const newsRouter = require('./api/routes/news');
+const staffsRouter = require('./api/routes/staffs');
+const noticesRouter = require('./api/routes/notices');
 const app = express();              // executing express
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
@@ -10,13 +12,14 @@ mongoose.set("strictQuery", false);
 mongoose.connect('mongodb+srv://suryanshhbtu:suryanshhbtu@cluster0.t1zpklg.mongodb.net/?retryWrites=true&w=majority', () => {
   console.log("Connected to MongoDB");
 });
-
 // mongoose.connect('',
 //     { useNewUrlParser: true });   // ??????????????????????????????????????
 
 app.use(bodyParser.urlencoded({ extended: false }));  //???????????
 app.use(bodyParser.json());          // req.body -> undefined -> json
 app.use('/news', newsRouter);
+app.use('/staffs', staffsRouter);
+app.use('/notices', noticesRouter);
 
 app.use(morgan('dev'));             // it logs all the requests made to server GET/PATCH/POST/DELETE -> GET /news/special 200 7.979 ms - 23
 
