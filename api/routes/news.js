@@ -1,37 +1,92 @@
 const express = require('express');
+const { default: mongoose } = require('mongoose');
 const router = express.Router();     // importing router from express
+const News = require('../Models/news');
 
+// Get All News And Event -> returns a json Array of all object present in database
 router.get('/', (req, res, next) => {
+    News.find().exec().then(doc => {
+        console.log("From DATABASE", doc);
+        res.status(200).json(doc);
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).json({
+            Error: err,
+            msg: "Failed to Fetch All from database."
+        });
+    });
+});
+
+// get Specific News
+router.get('/:newsId', (req, res, next) => {
+    const id = req.params.newsId;
+    News.findById(id).exec().then(doc => {
+        console.log("From DATABASE", doc);
+        res.status(200).json(doc);
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).json({
+            Error: err,
+            msg: "check NewsId and Try Again !"
+        });
+    });
+});
+// POSTING NEW NEWS_AND_EVENT
+router.post('/', (req, res, next) => {
+    const news = new News({
+        _id: mongoose.Types.ObjectId(),   // dont write schema here-> bson error
+        title: req.body.title,
+        notice: req.body.notice,
+        msg: req.body.msg,
+        newLabel: req.body.newLabel,
+    });
+    news.save().then(result => {
+        console.log(result);
+    }).catch(err => console.log(err));
     res.status(200).json({
-        message: 'News '
+        message: "Handling Post",
+        news: req.body,
+    });
+});
+
+// DELETING A NEWS
+router.delete('/:newsId', (req, res, next) => {
+    const id = req.params.newsId;
+    News.remove({ _id: id }).exec().then((result) => {
+        res.status(200).json(result);
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).json({
+            message: "Not Deleted",
+            Error: err,
+        });
     });
 });
 
 
-router.get('/:newsId', (req, res, next) => {
-    if(req.params.newsId === 'special'){
+// Updating A NEWS
+router.patch('/:newsId', (req, res, next) => {
+    const _id = req.params.newsId;
+    const updatedOps = {};
+    for(const ops of req.body){
+        updatedOps[ops.propName] = ops.value;
+    }
+    News.updateOne({ _id: _id }, {$set: updatedOps}
+        ).exec().then((result) => {
+            console.log(result);
         res.status(200).json({
-            message: 'You are Special'
-        }); 
-    }else{
-        res.status(200).json({
-            message: 'You are not Special'
+            message: "News Updated Successfully",
+            result: {
+                type: "GET",
+                url: "http://localhost:3030/news/" + _id,
+            },
         });
-    }
-    
-});
-
-router.post('/', (req, res, next)=>{
-    console.log(req.body);
-    const news = {
-        title: req.body.title,
-        msg: req.body.msg,
-        isNew: req.body.isNew,
-        type: req.body.type
-    }
-    res.status(200).json({
-        message: "Handling Post",
-        news: news,
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).json({
+            message: "Some Error In Patch",
+            Error: err,
+        });
     });
 });
 module.exports = router;
